@@ -1,0 +1,44 @@
+name: FlavorFusion
+description: A platform for discovering and sharing delicious recipes.
+
+features:
+  authentication:
+    user_entity: User
+    jwt_secret: env(JWT_SECRET)
+
+entities:
+  User:
+    properties:
+      name: string(required=true)
+      email: string(unique=true, required=true)
+      password: password
+      role:
+        type: enum
+        values: [Admin, User]
+        default: User
+    access_policies:
+      - role: Admin
+        permissions: [create, read, update, delete]
+      - role: User
+        permissions: [read]
+
+  Recipe:
+    properties:
+      title: string(required=true)
+      description: string(required=true)
+      ingredients: array(required=true)
+      instructions: string(required=true)
+      prepTime: number # in minutes
+      cookTime: number # in minutes
+      imageUrl: file
+    relationships:
+      - type: belongsTo
+        entity: User
+        foreignKey: authorId
+    access_policies:
+      - role: Admin
+        permissions: [create, read, update, delete]
+      - role: User
+        permissions: [create, read]
+      - condition: isOwner
+        permissions: [update, delete]
